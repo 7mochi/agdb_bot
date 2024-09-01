@@ -1,0 +1,10 @@
+services:
+  agdb-discord-bot:
+    image: agdb-discord-bot:latest
+    environment:
+      - APP_COMPONENT=${APP_COMPONENT}
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
+    volumes:
+      - .:/srv/root
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

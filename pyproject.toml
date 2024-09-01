@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "agdb-bot"
+version = "1.0"
+description = "TODO"
+authors = ["7mochi"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+"discord.py" = "^2.4.0"
+python-dotenv = "^1.0.1"
+python-json-logger = "^2.0.7"
+httpx = "^0.27.2"
+pydantic = "^2.8.2"
+
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^3.8.0"
+black = "^24.8.0"
+isort = "^5.13.2"
+mypy = "^1.11.2"
+types-pyyaml = "^6.0.12.20240808"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
