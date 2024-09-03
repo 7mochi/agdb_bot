@@ -71,6 +71,7 @@ async def info(
         value=textwrap.dedent(
             f"""\
                 ▸ **SteamID:** {player.steamID}
+                ▸ **Related SteamIDs:** {", ".join(player.relatedSteamIDs) if player.relatedSteamIDs else "None"}
                 ▸ **Banned:** {player.isBanned}
                 ▸ **Nicknames:** {", ".join(player.nicknames[:5])}
             """,
