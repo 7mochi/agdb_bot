@@ -35,4 +35,4 @@ async def fetch_player_info(steam_id: str) -> Player | None:
         assert agdb_api_response_data is not None
         return Player(**agdb_api_response_data)
     except Exception:
-        raise
+        return None
