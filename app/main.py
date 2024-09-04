@@ -41,6 +41,23 @@ async def on_ready() -> None:
     await bot.tree.sync()
 
 
+def guild_only():
+    def decorator(func):
+        @functools.wraps(func)
+        async def wrapper(interaction: discord.Interaction, *args, **kwargs):
+            if interaction.guild is None:
+                await interaction.response.send_message(
+                    "This command cannot be used in DMs. Consider joining the AGDB Discord server to use this command and many more! https://discord.gg/8btSjbYYFc",
+                    ephemeral=True,
+                )
+                return
+            return await func(interaction, *args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
+
 def is_user_admin():
     def decorator(func):
         @functools.wraps(func)
@@ -74,6 +91,7 @@ def is_user_admin():
     description="Returns a player's information",
 )
 @app_commands.describe(steam_id="SteamID of the player to check")
+@guild_only()
 async def info(
     interaction: discord.Interaction,
     steam_id: str,
@@ -115,6 +133,7 @@ async def info(
     description="Bans a player",
 )
 @app_commands.describe(steam_id="SteamID of the player to ban")
+@guild_only()
 @is_user_admin()
 async def ban(
     interaction: discord.Interaction,
@@ -146,6 +165,7 @@ async def ban(
     name="unban",
     description="Unbans a player",
 )
+@guild_only()
 @is_user_admin()
 @app_commands.describe(steam_id="SteamID of the player to unban")
 @is_user_admin()
