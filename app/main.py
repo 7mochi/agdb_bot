@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import functools
 import os
 import sys
 import textwrap
@@ -40,6 +41,34 @@ async def on_ready() -> None:
     await bot.tree.sync()
 
 
+def is_user_admin():
+    def decorator(func):
+        @functools.wraps(func)
+        async def wrapper(interaction: discord.Interaction, *args, **kwargs):
+            guild = bot.get_guild(settings.DISCORD_AGDB_GUILD_ID)
+            assert guild is not None
+
+            member = guild.get_member(interaction.user.id)
+            assert member is not None
+
+            admin_role = discord.utils.get(
+                guild.roles,
+                id=settings.DISCORD_ADMIN_ROLE_ID,
+            )
+            if admin_role in member.roles:
+                return await func(interaction, *args, **kwargs)
+            else:
+                await interaction.response.send_message(
+                    "You don't have permission to use this command",
+                    ephemeral=True,
+                )
+                return
+
+        return wrapper
+
+    return decorator
+
+
 @bot.tree.command(
     name="info",
     description="Returns a player's information",
@@ -76,6 +105,71 @@ async def info(
                 ▸ **Nicknames:** {", ".join(player.nicknames[:5])}
             """,
         ),
+    )
+
+    await interaction.followup.send(embed=player_embed)
+
+
+@bot.tree.command(
+    name="ban",
+    description="Bans a player",
+)
+@app_commands.describe(steam_id="SteamID of the player to ban")
+@is_user_admin()
+async def ban(
+    interaction: discord.Interaction,
+    steam_id: str,
+) -> None:
+    await interaction.response.defer(ephemeral=False)
+
+    ban_response = await agdb_api.ban_player(steam_id)
+
+    if ban_response is None:
+        await interaction.followup.send("Failed to ban player, player not found")
+        return
+
+    player_embed = discord.Embed(
+        color=discord.Color.red(),
+    )
+    player_embed.set_author(
+        name=f"Player Banned: {ban_response.steamID}",
+    )
+    player_embed.add_field(
+        name="",
+        value=ban_response.message,
+    )
+
+    await interaction.followup.send(embed=player_embed)
+
+
+@bot.tree.command(
+    name="unban",
+    description="Unbans a player",
+)
+@is_user_admin()
+@app_commands.describe(steam_id="SteamID of the player to unban")
+@is_user_admin()
+async def unban(
+    interaction: discord.Interaction,
+    steam_id: str,
+) -> None:
+    await interaction.response.defer(ephemeral=False)
+
+    unban_response = await agdb_api.unban_player(steam_id)
+
+    if unban_response is None:
+        await interaction.followup.send("Failed to unban player, player not found")
+        return
+
+    player_embed = discord.Embed(
+        color=discord.Color.green(),
+    )
+    player_embed.set_author(
+        name=f"Player Unbanned: {unban_response.steamID}",
+    )
+    player_embed.add_field(
+        name="",
+        value=unban_response.message,
     )
 
     await interaction.followup.send(embed=player_embed)
