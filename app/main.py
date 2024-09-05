@@ -199,9 +199,8 @@ async def ban(
     name="unban",
     description="Unbans a player",
 )
-@guild_only()
-@is_user_admin()
 @app_commands.describe(steam_id="SteamID of the player to unban")
+@guild_only()
 @is_user_admin()
 async def unban(
     interaction: discord.Interaction,
