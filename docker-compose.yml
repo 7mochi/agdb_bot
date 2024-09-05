@@ -4,6 +4,10 @@ services:
     environment:
       - APP_COMPONENT=${APP_COMPONENT}
       - DISCORD_TOKEN=${DISCORD_TOKEN}
+      - DISCORD_AGDB_GUILD_ID=${DISCORD_AGDB_GUILD_ID}
+      - DISCORD_ADMIN_ROLE_ID=${DISCORD_ADMIN_ROLE_ID}
+      - AGDB_API_URL=${AGDB_API_URL}
+      - AGDB_MASTER_KEY=${AGDB_MASTER_KEY}
     volumes:
       - .:/srv/root
     extra_hosts:
