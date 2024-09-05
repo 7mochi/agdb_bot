@@ -150,18 +150,49 @@ async def ban(
         await interaction.followup.send("Failed to ban player, player not found")
         return
 
-    player_embed = discord.Embed(
+    ban_embed = discord.Embed(
         color=discord.Color.red(),
     )
-    player_embed.set_author(
+    ban_embed.set_author(
         name=f"Player Banned: {ban_response.steamID}",
     )
-    player_embed.add_field(
+    ban_embed.add_field(
         name="",
         value=ban_response.message,
     )
 
-    await interaction.followup.send(embed=player_embed)
+    channel = bot.get_channel(settings.DISCORD_BAN_LOG_CHANNEL_ID)
+
+    player = await agdb_api.fetch_player_info(steam_id)
+    assert player is not None
+
+    player_embed = discord.Embed(
+        color=discord.Color.red(),
+    )
+
+    player_embed.set_author(
+        name=f"A player has been AGDB banned: {player.steamName}",
+        url=player.steamUrl,
+        icon_url=f"https://assets.ppy.sh/old-flags/{player.country}.png",  # TODO: Using osu! flags for now
+    )
+    player_embed.set_thumbnail(url=player.avatar)
+    player_embed.add_field(
+        name="",
+        value=textwrap.dedent(
+            f"""\
+                ▸ **SteamID:** {player.steamID}
+                ▸ **Related SteamIDs:** {", ".join(player.relatedSteamIDs) if player.relatedSteamIDs else "N/A"}
+                ▸ **Ban reason:** {player.banReason if player.isBanned else "N/A"}
+                ▸ **Nicknames:** {", ".join(player.nicknames[:5])}
+            """,
+        ),
+    )
+
+    assert isinstance(channel, discord.TextChannel)
+    assert channel is not None
+
+    await interaction.followup.send(embed=ban_embed)
+    await channel.send(embed=player_embed)
 
 
 @bot.tree.command(
@@ -184,18 +215,48 @@ async def unban(
         await interaction.followup.send("Failed to unban player, player not found")
         return
 
-    player_embed = discord.Embed(
+    unban_embed = discord.Embed(
         color=discord.Color.green(),
     )
-    player_embed.set_author(
+    unban_embed.set_author(
         name=f"Player Unbanned: {unban_response.steamID}",
     )
-    player_embed.add_field(
+    unban_embed.add_field(
         name="",
         value=unban_response.message,
     )
 
-    await interaction.followup.send(embed=player_embed)
+    channel = bot.get_channel(settings.DISCORD_BAN_LOG_CHANNEL_ID)
+
+    player = await agdb_api.fetch_player_info(steam_id)
+    assert player is not None
+
+    player_embed = discord.Embed(
+        color=discord.Color.green(),
+    )
+
+    player_embed.set_author(
+        name=f"A player has been AGDB unbanned: {player.steamName}",
+        url=player.steamUrl,
+        icon_url=f"https://assets.ppy.sh/old-flags/{player.country}.png",  # TODO: Using osu! flags for now
+    )
+    player_embed.set_thumbnail(url=player.avatar)
+    player_embed.add_field(
+        name="",
+        value=textwrap.dedent(
+            f"""\
+                ▸ **SteamID:** {player.steamID}
+                ▸ **Related SteamIDs:** {", ".join(player.relatedSteamIDs) if player.relatedSteamIDs else "N/A"}
+                ▸ **Nicknames:** {", ".join(player.nicknames[:5])}
+            """,
+        ),
+    )
+
+    assert isinstance(channel, discord.TextChannel)
+    assert channel is not None
+
+    await interaction.followup.send(embed=unban_embed)
+    await channel.send(embed=player_embed)
 
 
 if __name__ == "__main__":
