@@ -25,11 +25,12 @@ async def fetch_player_info(steam_id: str) -> Player | None:
         return None
 
 
-async def ban_player(steam_id: str) -> BanUnbanResponse | None:
+async def ban_player(steam_id: str, reason: str) -> BanUnbanResponse | None:
     try:
         response = await agdb_api_http_client.post(
             f"players/ban/{steam_id}",
             headers={"master-Key": settings.AGDB_MASTER_KEY},
+            json={"reason": reason},
         )
 
         response.raise_for_status()

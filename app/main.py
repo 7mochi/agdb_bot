@@ -118,8 +118,9 @@ async def info(
         value=textwrap.dedent(
             f"""\
                 ▸ **SteamID:** {player.steamID}
-                ▸ **Related SteamIDs:** {", ".join(player.relatedSteamIDs) if player.relatedSteamIDs else "None"}
+                ▸ **Related SteamIDs:** {", ".join(player.relatedSteamIDs) if player.relatedSteamIDs else "N/A"}
                 ▸ **Banned:** {player.isBanned}
+                ▸ **Ban reason:** {player.banReason if player.isBanned else "N/A"}
                 ▸ **Nicknames:** {", ".join(player.nicknames[:5])}
             """,
         ),
@@ -133,15 +134,17 @@ async def info(
     description="Bans a player",
 )
 @app_commands.describe(steam_id="SteamID of the player to ban")
+@app_commands.describe(reason="Reason for the ban")
 @guild_only()
 @is_user_admin()
 async def ban(
     interaction: discord.Interaction,
     steam_id: str,
+    reason: str,
 ) -> None:
     await interaction.response.defer(ephemeral=False)
 
-    ban_response = await agdb_api.ban_player(steam_id)
+    ban_response = await agdb_api.ban_player(steam_id, reason)
 
     if ban_response is None:
         await interaction.followup.send("Failed to ban player, player not found")

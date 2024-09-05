@@ -11,6 +11,7 @@ class Player(BaseModel):
     creationTime: int | None = None
     latestActivity: int | None = None
     isBanned: bool
+    banReason: str | None = None
     nicknames: list[str]
 
 
