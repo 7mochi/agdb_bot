@@ -3,6 +3,7 @@ import functools
 import os
 import sys
 import textwrap
+from collections.abc import Callable
 from typing import Any
 
 import discord
@@ -39,13 +40,17 @@ bot = Bot(intents=intents)
 @bot.event
 async def on_ready() -> None:
     await bot.tree.sync()
-    serverlist_cronjob.start()
+    await serverlist_cronjob.start()
 
 
-def guild_only():
-    def decorator(func):
+def guild_only() -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @functools.wraps(func)
-        async def wrapper(interaction: discord.Interaction, *args, **kwargs):
+        async def wrapper(
+            interaction: discord.Interaction,
+            *args: Any,
+            **kwargs: Any,
+        ) -> Any:
             if interaction.guild is None:
                 await interaction.response.send_message(
                     "This command cannot be used in DMs. Consider joining the AGDB Discord server to use this command and many more! https://discord.gg/8btSjbYYFc",
@@ -59,10 +64,14 @@ def guild_only():
     return decorator
 
 
-def is_user_admin():
-    def decorator(func):
+def is_user_admin() -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @functools.wraps(func)
-        async def wrapper(interaction: discord.Interaction, *args, **kwargs):
+        async def wrapper(
+            interaction: discord.Interaction,
+            *args: Any,
+            **kwargs: Any,
+        ) -> Any:
             guild = bot.get_guild(settings.DISCORD_AGDB_GUILD_ID)
             assert guild is not None
 
@@ -260,7 +269,7 @@ async def unban(
 
 
 @tasks.loop(minutes=10)
-async def serverlist_cronjob():
+async def serverlist_cronjob() -> None:
     channel = bot.get_channel(settings.DISCORD_AGDB_SERVERLIST_CHANNEL_ID)
 
     serverlist = await agdb_api.fetch_serverlist()
