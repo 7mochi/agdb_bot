@@ -1,6 +1,6 @@
 import httpx
 
-from app.adapters.models import BanUnbanResponse, Player
+from app.adapters.models import BanUnbanResponse, Player, Server
 from app.common import settings
 
 agdb_api_http_client = httpx.AsyncClient(
@@ -21,6 +21,19 @@ async def fetch_player_info(steam_id: str) -> Player | None:
 
         assert agdb_api_response_data is not None
         return Player(**agdb_api_response_data)
+    except Exception:
+        return None
+
+
+async def fetch_serverlist() -> list[Server] | None:
+    try:
+        response = await agdb_api_http_client.get("servers")
+
+        response.raise_for_status()
+        agdb_api_response_data = response.json()
+
+        assert agdb_api_response_data is not None
+        return [Server(**server) for server in agdb_api_response_data]
     except Exception:
         return None
 

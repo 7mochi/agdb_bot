@@ -9,6 +9,7 @@ services:
       - AGDB_API_URL=${AGDB_API_URL}
       - AGDB_MASTER_KEY=${AGDB_MASTER_KEY}
       - DISCORD_BAN_LOG_CHANNEL_ID=${DISCORD_BAN_LOG_CHANNEL_ID}
+      - DISCORD_AGDB_SERVERLIST_CHANNEL_ID=${DISCORD_AGDB_SERVERLIST_CHANNEL_ID}
     volumes:
       - .:/srv/root
     extra_hosts:

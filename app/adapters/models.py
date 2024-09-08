@@ -15,6 +15,13 @@ class Player(BaseModel):
     nicknames: list[str]
 
 
+class Server(BaseModel):
+    id: int
+    ipPort: str
+    serverName: str
+    agdbVersion: str
+
+
 class BanUnbanResponse(BaseModel):
     steamID: str
     message: str

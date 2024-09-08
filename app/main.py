@@ -7,7 +7,7 @@ from typing import Any
 
 import discord
 from discord import app_commands
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 # add .. to path
 srv_root = os.path.join(os.path.dirname(__file__), "..")
@@ -39,6 +39,7 @@ bot = Bot(intents=intents)
 @bot.event
 async def on_ready() -> None:
     await bot.tree.sync()
+    serverlist_cronjob.start()
 
 
 def guild_only():
@@ -256,6 +257,42 @@ async def unban(
 
     await interaction.followup.send(embed=unban_embed)
     await channel.send(embed=player_embed)
+
+
+@tasks.loop(minutes=10)
+async def serverlist_cronjob():
+    channel = bot.get_channel(settings.DISCORD_AGDB_SERVERLIST_CHANNEL_ID)
+
+    serverlist = await agdb_api.fetch_serverlist()
+    assert serverlist is not None
+
+    assert isinstance(channel, discord.TextChannel)
+    assert channel is not None
+
+    latest_messages = [message async for message in channel.history(limit=100)]
+
+    content = textwrap.dedent(
+        f"""\
+                *Please note: Some servers may not be displayed. The server list is updated automatically every 10 minutes, so it might not reflect all servers at the moment.*
+
+                Here are some of the servers currently using AGDB
+
+                **Servers using AGDB** (Server count: {len(serverlist)})
+            """,
+    )
+
+    for server in serverlist:
+        content += f"- {server.serverName} (AGDB v{server.agdbVersion})\n"
+        content += f"  - IP: {server.ipPort}\n"
+
+    for message in latest_messages:
+        assert bot.user is not None
+
+        if message.author.id == bot.user.id:
+            await message.edit(content=content)
+            return
+
+    await channel.send(content=content)
 
 
 if __name__ == "__main__":
